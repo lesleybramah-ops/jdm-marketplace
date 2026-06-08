@@ -34,11 +34,13 @@
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .lot-count { color: #66fcf1; font-weight: bold; background: rgba(102, 252, 241, 0.1); padding: 4px 12px; border-radius: 12px; }
         .marketplace-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
-        .car-card { background-color: #1f2833; border-radius: 8px; overflow: hidden; border: 1px solid #2e3944; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .car-card { background-color: #1f2833; border-radius: 8px; overflow: hidden; border: 1px solid #2e3944; position: relative; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .car-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(102, 252, 241, 0.15); }
         .card-img-holder { position: relative; width: 100%; height: 180px; background-color: #111; }
         .card-img-holder img { width: 100%; height: 100%; object-fit: cover; }
         .badge-featured { position: absolute; top: 10px; left: 10px; padding: 3px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; background-color: #ff9f43; color: #fff; }
+        .btn-delete-card { position: absolute; top: 10px; right: 10px; background-color: rgba(231, 76, 60, 0.9); color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-weight: bold; font-size: 0.8rem; z-index: 5; transition: 0.2s; }
+        .btn-delete-card:hover { background-color: #c0392b; }
         .price-tag { position: absolute; bottom: 10px; left: 10px; background-color: rgba(11, 12, 16, 0.9); color: #66fcf1; font-weight: bold; font-size: 1.1rem; padding: 4px 10px; border-radius: 4px; border-left: 3px solid #66fcf1; }
         .card-body { padding: 15px; }
         .card-body h4 { color: #fff; font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 5px; }
@@ -71,13 +73,13 @@
     <section class="hero-dashboard">
         <div class="dashboard-grid">
             <div class="dealer-profile">
-                <h1>Waqar Ahmed • Marketplace Portfolio</h1>
+                <h1>Waqar Ahmed • PakWheels Engine Portal</h1>
                 <div class="dealer-meta">
-                    <div class="meta-item">Region Base: <strong>Virginia, USA</strong></div>
+                    <div class="meta-item">Region Base: <strong>Karachi, Pakistan</strong></div>
                     <div class="meta-item">Helpline Line: <a href="tel:+923172553419"><strong>+92 317 2553419</strong></a></div>
                     <div class="meta-item">Status: <span style="color:#2ecc71;">● Verified Direct Vendor</span></div>
                 </div>
-                <p style="margin-bottom: 15px;">Welcome to an open JDM collection portal inspired by traditional auto databases. Use the system submission panel on the right to append your stock listings directly into the visual network catalogue safely.</p>
+                <p style="margin-bottom: 15px;">Your persistent inventory database. All cars submitted through the interface pane on the right are safely saved directly to LocalStorage. Temporary stock values have been discarded.</p>
             </div>
             <div class="upload-panel">
                 <h3>➕ Add New Car to Showroom</h3>
@@ -89,7 +91,10 @@
                         <div class="form-group"><label>Mileage (km)</label><input type="number" id="formMileage" placeholder="e.g. 45000" required></div>
                         <div class="form-group"><label>Class Category</label><select id="formCategory"><option value="kei">Kei Mini Truck/Van</option><option value="sports">Sports Classic</option></select></div>
                         <div class="form-group"><label>Grade Level</label><input type="text" id="formGrade" placeholder="e.g. 4.0 / Clean" required></div>
-                        <div class="form-group full-width"><label>Custom Image URL (Leave blank for auto stock photo)</label><input type="url" id="formImg" placeholder="https://images.unsplash.com/..."></div>
+                        <div class="form-group full-width">
+                            <label>Upload Picture File</label>
+                            <input type="file" id="formImgFile" accept="image/*" onchange="encodeImageFile(this)">
+                        </div>
                     </div>
                     <button type="submit" class="btn-submit">Publish Live Listing</button>
                 </form>
@@ -103,37 +108,81 @@
     <main class="main-container">
         <div class="section-header">
             <h2>Current Storefront Vehicles</h2>
-            <div class="lot-count">Active Registry: <span id="totalLotsDisplay">55</span> Units</div>
+            <div class="lot-count">Active Registry: <span id="totalLotsDisplay">0</span> Units</div>
         </div>
         <div class="marketplace-grid" id="inventoryGrid"></div>
     </main>
     <div class="modal-overlay" id="carModal" onclick="closeModalOutside(event)"><div class="modal-content"><span class="close-modal" onclick="closeCarModal()">&times;</span><div class="modal-grid" id="modalDataBox"></div></div></div>
-    <footer><p>&copy; 2026 JDM Supply Network | Powered by GitHub Pages Layout.</p></footer>
+    <footer><p>&copy; 2026 JDM Supply Network | Powered by PakWheels LocalStorage Structure.</p></footer>
+
     <script>
-        const itemNamesKei = ["Suzuki Carry 4WD", "Honda Acty SDX", "Daihatsu Hijet Climber", "Subaru Sambar High-Roof", "Mitsubishi Minicab"];
-        const itemNamesSports = ["Nissan Skyline GT-R R34", "Toyota Supra MK4 2JZ", "Mazda RX-7 FD3S", "Nissan Silvia S15 Spec-R", "Honda NSX NA1"];
-        const imageLibraryKei = ["https://images.unsplash.com/photo-1516515429572-bf32372f2409?auto=format&fit=crop&w=500&q=80","https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=500&q=80","https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=500&q=80","https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=500&q=80"];
-        const imageLibrarySports = ["https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=500&q=80","https://images.unsplash.com/photo-1616422285623-13ff0162193c?auto=format&fit=crop&w=500&q=80","https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&w=500&q=80","https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?auto=format&fit=crop&w=500&q=80"];
         let database = [];
-        for(let i = 1; i <= 55; i++) {
-            let isKei = i <= 40;
-            let modelName = isKei ? itemNamesKei[i % itemNamesKei.length] : itemNamesSports[i % itemNamesSports.length];
-            let baseImg = isKei ? imageLibraryKei[i % imageLibraryKei.length] : imageLibrarySports[i % imageLibrarySports.length];
-            let imgUrl = `${baseImg}&sig=${i}`;
-            let priceValue = isKei ? (3200 + (i * 75)) : (35000 + (i * 900));
-            database.push({ id: Date.now() + i, stockNum: `STK-${4000 + i}`, title: `${1993 + (i % 12)} ${modelName}`, category: isKei ? "kei" : "sports", engine: isKei ? "660cc EFI 3-Cylinder" : "Twin-Cam Multi-Valve Sports Motor", transmission: isKei ? "5-Speed Manual MT" : "6-Speed Performance Short-Shifter", mileage: `${42000 + (i * 950)} km`, price: priceValue, grade: (i % 2 === 0) ? "4.5" : "4.0", chassis: `JDM-${200000 + i}`, img: imgUrl, location: "Available / Sourced" });
+        let base64ImageString = "";
+
+        // Load saved inventory from LocalStorage immediately upon load
+        window.onload = function() {
+            const savedInventory = localStorage.getItem("jdm_showroom_inventory");
+            if (savedInventory) {
+                database = JSON.parse(savedInventory);
+            } else {
+                database = []; // Clean state with zero waste stock items
+            }
+            displayCards(database);
+        };
+
+        // Convert the uploaded system image file to permanent text data string
+        function encodeImageFile(element) {
+            const file = element.files[0];
+            const reader = new FileReader();
+            reader.onloadend = function() {
+                base64ImageString = reader.result;
+            }
+            if (file) {
+                reader.readAsDataURL(file);
+            }
         }
+
         function displayCards(dataList) {
-            const grid = document.getElementById("inventoryGrid"); grid.innerHTML = "";
-            if(dataList.length === 0) { grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:40px; color:#a8a9ad;">No items match search.</div>`; return; }
+            const grid = document.getElementById("inventoryGrid"); 
+            grid.innerHTML = "";
+            
+            if(dataList.length === 0) { 
+                grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:40px; color:#a8a9ad; font-size:1.1rem;">Your showroom is empty. Use the right form to upload your first vehicle listing!</div>`; 
+                document.getElementById("totalLotsDisplay").innerText = 0;
+                return; 
+            }
+            
+            // Show latest cars first
             const sortedList = [...dataList].reverse();
             sortedList.forEach(car => {
-                const card = document.createElement("div"); card.className = "car-card"; card.setAttribute("onclick", `openCarModal(${car.id})`);
-                card.innerHTML = `<div class="card-img-holder"><img src="${car.img}"><span class="badge-featured">Featured</span><div class="price-tag">$${car.price.toLocaleString()}</div></div><div class="card-body"><h4>${car.title}</h4><div class="card-specs"><span>${car.stockNum}</span><span>Grade: ${car.grade}</span><span>${car.mileage}</span></div><div class="location-box"><span>📍 Ready to Deliver</span><span style="font-weight: bold; color: #66fcf1;">View Details</span></div></div>`;
+                const card = document.createElement("div"); 
+                card.className = "car-card"; 
+                card.setAttribute("onclick", `checkCardClick(event, ${car.id})`);
+                
+                card.innerHTML = `
+                    <button class="btn-delete-card" data-id="${car.id}">Delete</button>
+                    <div class="card-img-holder">
+                        <img src="${car.img ? car.img : 'https://images.unsplash.com/photo-1616422285623-13ff0162193c?auto=format&fit=crop&w=500&q=80'}">
+                        <span class="badge-featured">Featured</span>
+                        <div class="price-tag">$${car.price.toLocaleString()}</div>
+                    </div>
+                    <div class="card-body">
+                        <h4>${car.title}</h4>
+                        <div class="card-specs">
+                            <span>${car.stockNum}</span>
+                            <span>Grade: ${car.grade}</span>
+                            <span>${car.mileage}</span>
+                        </div>
+                        <div class="location-box">
+                            <span>📍 Ready to Deliver</span>
+                            <span style="font-weight: bold; color: #66fcf1;">View Details</span>
+                        </div>
+                    </div>`;
                 grid.appendChild(card);
             });
             document.getElementById("totalLotsDisplay").innerText = dataList.length;
         }
+
         function handleFormSubmit(event) {
             event.preventDefault();
             const year = document.getElementById("formYear").value;
@@ -142,25 +191,83 @@
             const mileage = parseInt(document.getElementById("formMileage").value);
             const category = document.getElementById("formCategory").value;
             const grade = document.getElementById("formGrade").value;
-            let img = document.getElementById("formImg").value;
-            if(!img) { let randomLibrary = category === "kei" ? imageLibraryKei : imageLibrarySports; img = randomLibrary[Math.floor(Math.random() * randomLibrary.length)] + `&sig=${Math.floor(Math.random() * 100)}`; }
-            const newCarObj = { id: Date.now(), stockNum: `STK-${Math.floor(Math.random() * 9000) + 1000}`, title: `${year} ${title}`, category: category, engine: category === "kei" ? "660cc Eco-Engine" : "High Output Performance Engine", transmission: "Manual Transmission Asset", mileage: `${mileage.toLocaleString()} km`, price: price, grade: grade, chassis: `JDM-${Math.floor(Math.random() * 899999) + 100000}`, img: img, location: "User Uploaded Showcase" };
-            database.push(newCarObj); displayCards(database); document.getElementById("carUploadForm").reset(); alert("Success! Your car was uploaded.");
+            
+            const newCarObj = { 
+                id: Date.now(), 
+                stockNum: `STK-${Math.floor(Math.random() * 9000) + 1000}`, 
+                title: `${year} ${title}`, 
+                category: category, 
+                engine: category === "kei" ? "660cc Eco-Engine" : "High Output Performance Engine", 
+                transmission: "Manual Transmission Asset", 
+                mileage: `${mileage.toLocaleString()} km`, 
+                price: price, 
+                grade: grade, 
+                chassis: `JDM-${Math.floor(Math.random() * 899999) + 100000}`, 
+                img: base64ImageString, // Save picture asset
+                location: "Showroom Floor Stock" 
+            };
+            
+            database.push(newCarObj);
+            
+            // Save inside persistent system storage
+            localStorage.setItem("jdm_showroom_inventory", JSON.stringify(database));
+            
+            displayCards(database); 
+            document.getElementById("carUploadForm").reset(); 
+            base64ImageString = ""; // Reset file loader value
+            alert("Success! Your car was uploaded securely.");
         }
+
+        function checkCardClick(event, id) {
+            // If user clicks delete button, do not pop open detail window
+            if(event.target.classList.contains('btn-delete-card')) {
+                deleteListing(id);
+                return;
+            }
+            openCarModal(id);
+        }
+
+        function deleteListing(id) {
+            if(confirm("Are you sure you want to remove this car listing from your showroom?")) {
+                database = database.filter(car => car.id !== id);
+                localStorage.setItem("jdm_showroom_inventory", JSON.stringify(database));
+                displayCards(database);
+            }
+        }
+
         function filterInventory() {
             const searchVal = document.getElementById("searchBar").value.toLowerCase();
             const catVal = document.getElementById("categoryFilter").value;
-            const filtered = database.filter(car => { return (car.title.toLowerCase().includes(searchVal) || car.stockNum.toLowerCase().includes(searchVal)) && ((catVal === "all") || (car.category === catVal)); });
+            const filtered = database.filter(car => { 
+                return (car.title.toLowerCase().includes(searchVal) || car.stockNum.toLowerCase().includes(searchVal)) && 
+                       ((catVal === "all") || (car.category === catVal)); 
+            });
             displayCards(filtered);
         }
+
         function openCarModal(id) {
-            const car = database.find(c => c.id === id); if(!car) return;
-            document.getElementById("modalDataBox").innerHTML = `<div class="modal-img-wrap"><img src="${car.img}"></div><div class="modal-details"><div><span style="color:#66fcf1; font-weight:bold; font-size:0.9rem; text-transform:uppercase;">ID: ${car.stockNum} • Grade ${car.grade}</span><h2>${car.title}</h2><div class="modal-price">$${car.price.toLocaleString()}</div><table class="specs-table"><tr><td>Chassis Registry</td><td>${car.chassis}</td></tr><tr><td>Powertrain Motor</td><td>${car.engine}</td></tr><tr><td>Odometer Usage</td><td>${car.mileage}</td></tr><tr><td>Fulfillment</td><td>${car.location}</td></tr></table></div><div><a href="tel:+923172553419" class="btn-action">Contact Booking Agent to Buy</a></div></div>`;
+            const car = database.find(c => c.id === id); 
+            if(!car) return;
+            document.getElementById("modalDataBox").innerHTML = `
+                <div class="modal-img-wrap"><img src="${car.img ? car.img : 'https://images.unsplash.com/photo-1616422285623-13ff0162193c?auto=format&fit=crop&w=1200&q=80'}"></div>
+                <div class="modal-details">
+                    <div>
+                        <span style="color:#66fcf1; font-weight:bold; font-size:0.9rem; text-transform:uppercase;">ID: ${car.stockNum} • Grade ${car.grade}</span>
+                        <h2>${car.title}</h2>
+                        <div class="modal-price">$${car.price.toLocaleString()}</div>
+                        <table class="specs-table">
+                            <tr><td>Chassis Registry</td><td>${car.chassis}</td></tr>
+                            <tr><td>Powertrain Motor</td><td>${car.engine}</td></tr>
+                            <tr><td>Odometer Usage</td><td>${car.mileage}</td></tr>
+                            <tr><td>Fulfillment</td><td>${car.location}</td></tr>
+                        </table>
+                    </div>
+                    <div><a href="tel:+923172553419" class="btn-action">Contact Booking Agent to Buy</a></div>
+                </div>`;
             document.getElementById("carModal").style.display = "flex";
         }
         function closeCarModal() { document.getElementById("carModal").style.display = "none"; }
         function closeModalOutside(e) { if(e.target.id === "carModal") closeCarModal(); }
-        displayCards(database);
     </script>
 </body>
 </html>
